@@ -76,10 +76,14 @@ class t234:
 			promoteIndex = nodePtr.getDataIndex(promoteValue)
 
 			# shift larger data one space to the right in current node
-			if not nodePtr.data[promoteIndex] == None and promoteIndex < 2:
-				nodePtr.data[promoteIndex+1] = nodePtr.data[promoteIndex]
-				if not nodePtr.ptr[promoteIndex+1] == None:
-					nodePtr.ptr[promoteIndex+2] = nodePtr.ptr[promoteIndex+1]
+			if promoteIndex == 0 or promoteIndex == 1:
+				nodePtr.data[2] = nodePtr.data[1]
+				if not nodePtr.ptr[2] == None:
+					nodePtr.ptr[3] = nodePtr.ptr[2]
+			if promoteIndex == 0:
+				nodePtr.data[1] = nodePtr.data[0]
+				if not nodePtr.ptr[1] == None:
+					nodePtr.ptr[2] = nodePtr.ptr[1]
 
 			# promote the middle item from child node
 			nodePtr.data[promoteIndex] = promoteValue
@@ -109,7 +113,7 @@ class t234:
 				if curr.isLeaf():
 					index = curr.getDataIndex( data )
 					# for i in range(  len( curr.data )-1, index, -1 ):
-					# 	  curr.data[i] = curr.data[i-1]
+					# 	curr.data[i] = curr.data[i-1]
 					curr.data[(index+1):] = curr.data[index:2]
 					curr.data[index] = data
 					return
@@ -125,6 +129,8 @@ class t234:
 				self.printRecursive(self.root, 0, 0)
 			elif direction == 1:
 				self.printRecursiveLR( self.root, 0 , 0 )
+			elif direction == 2:
+				self.printRecursiveIO( self.root, 0 )
 
 		def printRecursive( self, curr, depth, index ):
 			#print right to left, then curr
@@ -140,7 +146,7 @@ class t234:
 			# Finish the print function
 
 		def printRecursiveLR( self, curr, depth, index ):
-			#print right to left, then curr
+			#print left to right, then curr
 			if curr == None:
 					return
 			self.depthSpace = '\t\t'
@@ -149,6 +155,22 @@ class t234:
 			#print pointers right->left
 			for i in range(0, 4, 1):
 				self.printRecursiveLR(curr.ptr[i], depth + 1, i)
+			return
+			# Finish the print function
+
+		def printRecursiveIO( self, curr, depth):
+			#print right to left, then curr
+			if curr == None:
+					return
+			self.depthSpace = '\t\t'
+
+			self.printRecursiveIO(curr.ptr[0], depth + 1)
+			print self.depthSpace * depth, curr.data[0]
+			self.printRecursiveIO(curr.ptr[1], depth + 1)
+			print self.depthSpace * depth, curr.data[1]
+			self.printRecursiveIO(curr.ptr[2], depth + 1)
+			print self.depthSpace * depth, curr.data[2]
+			self.printRecursiveIO(curr.ptr[3], depth + 1)
 			return
 			# Finish the print function
 
@@ -171,27 +193,50 @@ class t234:
 			return self.findWord( word, self.root )
 
 		def findWord( self, word, curr):
+			matchList = []
 			if curr == None:
-				return []
-			hasWildcard = False
-			for l in word:
-				if l == '*':
-					hasWildcard = True
-					break
-			if not hasWildcard:
-				return [word]
+				return matchList
 			else:
-				pass
+				for j in range(3):
+					i = 0
+					compare = 'same'
+					if not curr.data[j] == None:
+						for l in word:
+							if l == '*':
+								break
+							elif l < curr.data[j][i]:
+								compare = 'smaller'
+								break
+							elif l > curr.data[j][i]:
+								compare = 'larger'
+								break
+							i += 1
+						if compare == 'same':
+							if len(word)+1 == len(curr.data[j]):
+								matchList.append(curr.data[j])
+							matchList += self.findWord( word, curr.ptr[j])
+						elif compare == 'smaller':
+							matchList += self.findWord( word, curr.ptr[j])
+							break
+						if j == 2 or curr.data[j+1] == None:
+							matchList += self.findWord( word, curr.ptr[j+1])
+							break
+				return matchList
+					
 
 
 
-infile = open( './dictionaryWin.txt', 'r')
-mysteryWord = '*******'
+
+
+
+
+infile = open( './dictionaryLin.txt', 'r')
 
 wordlist = []
 T = t234()
 avlTree = pyavltree.AVLTree()
-wlSize = 15
+mysteryWord = 'sabby'
+wlSize = 700000
 
 for i, item in enumerate( infile ):
 	wordlist.append(item)
@@ -199,8 +244,9 @@ for i, item in enumerate( infile ):
 		break
 
 random.shuffle(wordlist)
+# wordlist.sort( key= lambda x: len( x ), reverse= True )
 
-# Start timing insert
+### Start timing insert
 tInsert_start = time.clock()
 for w in wordlist:
 	T.insert(w)
@@ -211,8 +257,8 @@ for w in wordlist:
 	avlTree.insert(w)
 aInsert_end = time.clock()
 
-print T.printTree(1)
-print avlTree.as_list(1)
+#print T.printTree(1)
+#print avlTree.as_list(1)
 
 print '---------------------------------'
 print ' insert time '
@@ -223,44 +269,16 @@ print aInsert_end - aInsert_start
 print T.getSize()
 print '---------------------------------'
 
-# Testing t234 insert
-# for i in range(10,100,10):
-# 	T.insert(i)
-# T.insert(35)
-# T.insert(37)
-# T.insert(38)
-# T.insert(39)
-# T.insert(25)
-# T.insert(27)
-# T.insert(26)
-# T.insert(29)
-# T.insert(11)
-# T.insert(12)
-# T.insert(13)
-# T.insert(101)
-# T.insert(96)
-# T.insert(99)
-# T.insert(98)
-# T.insert(105)
-# T.printTree()
-# print '----------------'
+### Print the wordlist
+# for w in wordlist:
+# 	print w
+# print '---------------------------------'
 
-# testWords = ['banana', 'apple', 'carrot', 'lettuce', 'pepper', 'kljdfg', 'sdflkj', 'fdgijerl', 'reoijht', 'troiu', 'ertoij', 'erwt', 'erty', 'ezz', 'exa', 'oerijfgdkm', 'sdff', 'qwer']
+### Look for words in t234 and print matches
+# found = T.find(mysteryWord)
+# for w in found:
+# 	print w,
 
-# for t in testWords:
-# 	T.insert(t)
-
-
-
-
-#print testWords
-#print sorted( testWords )
-
-
-# avlTree.insert( 10 )
-# avlTree.insert( 20 )
-# avlTree.insert( 30 )
-# avlTree.insert( 40 )
 
 # print avlTree.as_list(1)
 
