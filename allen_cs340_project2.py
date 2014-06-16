@@ -1,3 +1,17 @@
+from avl import pyavltree
+import time
+import random
+
+infile = open( './dictionaryWin.txt', 'r')
+wordlist = []
+mysteryWord = '*******'
+for i, item in enumerate( infile ):
+	wordlist.append(item)
+	if i == 700000:
+		break
+
+random.shuffle(wordlist)
+
 class node:
 		def __init__(self):
 				self.data = [None, None, None]
@@ -66,8 +80,21 @@ class t234:
 				if nodePtr.ptr[index].data[2] == None:
 						return
 
-				# Your code here
-
+				# Your code
+				promoteValue = nodePtr.ptr[index].data[1]
+				promoteIndex = nodePtr.getDataIndex(promoteValue)
+				#shift data
+				newNode = node()
+				newNode.data[0] = nodePtr.ptr[index].data[2]
+				nodePtr.data[promoteIndex] = promoteValue
+				nodePtr.ptr[index].data[1] = None
+				nodePtr.ptr[index].data[2] = None
+				#shift pointers
+				newNode.ptr[0] = nodePtr.ptr[index].ptr[2]
+				newNode.ptr[1] = nodePtr.ptr[index].ptr[3]
+				nodePtr.ptr[index].ptr[2] = None
+				nodePtr.ptr[index].ptr[3] = None
+				nodePtr.ptr[index+1] = newNode
 
 		def insert( self, data ):
 				#check the split for root
@@ -76,44 +103,67 @@ class t234:
 				while curr != None:
 						#check if we are at a leaf
 						if curr.isLeaf():
-								index = curr.getDataIndex( data )
-								#for i in range(  len( curr.data)-1, index, -1 ):
-								#       curr.data[i] = curr.data[i-1]
-								curr.data[(index+1):] = curr.data[index:2]
-								curr.data[index] = data
-								return
+							index = curr.getDataIndex( data )
+							# for i in range(  len( curr.data )-1, index, -1 ):
+							# 	  curr.data[i] = curr.data[i-1]
+							curr.data[(index+1):] = curr.data[index:2]
+							curr.data[index] = data
+							return
 						else:
-								#find pointer to follow
-								index = curr.getPtrIndex( data )
-								self.split( curr, index )
-								index = curr.getPtrIndex( data )
-								curr = curr.ptr[index]
+							#find pointer to follow
+							index = curr.getPtrIndex( data )
+							self.split( curr, index )
+							index = curr.getPtrIndex( data )
+							curr = curr.ptr[index]
 
 		def printTree( self ):
-				self.printRecursive( self.root, 0 )
+				self.printRecursive( self.root, 0 , 0 )
 
-		def printRecursive( self, curr, depth ):
+		def printRecursive( self, curr, depth, index ):
 				#print right to left, then curr
 				if curr == None:
 						return
-				print curr
+				self.depthSpace = '\t\t'
+				#print pointers right->left
+				for i in range(3, -1, -1):
+					self.printRecursive(curr.ptr[i], depth + 1, i)
+				#print current node data
+				print self.depthSpace * depth, index, curr.data
 				return
 				# Finish the print function
 
 
 
 T = t234()
-T.insert( 10 )
+for i in range(10,100,10):
+	T.insert(i)
+	T.printTree()
+	print '----------------'
+T.insert(35)
 T.printTree()
-T.insert( 20 )
+print '----------------'
+T.insert(37)
 T.printTree()
-T.insert( 30 )
+print '----------------'
+T.insert(38)
 T.printTree()
-T.insert( 40 )
+print '----------------'
+T.insert(39)
 T.printTree()
 print '----------------'
 
 testWords = ['banana', 'apple', 'carrot', 'lettuce', 'pepper', 'kljdfg', 'sdflkj', 'fdgijerl', 'reoijht', 'troiu', 'ertoij', 'erwt', 'erty', 'ezz', 'exa', 'oerijfgdkm', 'sdff', 'qwer']
 
-print testWords
-print sorted( testWords )
+#print testWords
+#print sorted( testWords )
+
+print '----------------'
+
+avlTree = pyavltree.AVLTree()
+
+avlTree.insert( 10 )
+avlTree.insert( 20 )
+avlTree.insert( 30 )
+avlTree.insert( 40 )
+
+print avlTree.as_list(1)
