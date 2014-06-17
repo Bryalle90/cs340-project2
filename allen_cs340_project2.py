@@ -67,7 +67,7 @@ class t234:
 
 		return newRoot
 
-	def split( self, nodePtr, index ):
+	def split( self, nodePtr, index ): # O(kLog(n)) + 12
 		if nodePtr.ptr[index].data[2] == None:
 				return
 
@@ -75,7 +75,7 @@ class t234:
 		promoteValue = nodePtr.ptr[index].data[1]
 		promoteIndex = nodePtr.getDataIndex(promoteValue)
 
-		# shift larger data one space to the right in current node
+		# shift larger data one space to the right in current node O(logn)
 		if promoteIndex == 0 or promoteIndex == 1:
 			nodePtr.data[2] = nodePtr.data[1]
 			if not nodePtr.ptr[2] == None:
@@ -103,24 +103,22 @@ class t234:
 		# insert the new node as a child of current node
 		nodePtr.ptr[index+1] = newNode
 
-	def insert( self, data ):
+	def insert( self, data ): # 2klogn = O(logn) * O(klogn), k is how many nodes we have to split
 		#check the split for root
 		self.root = self.splitRoot( self.root )
 		curr = self.root
 		#print 'inserting:', data
 		while curr != None:
-			#check if we are at a leaf
+			#check if we are at a leaf ( should be O(log(n)) ) 
 			if curr.isLeaf():
 				index = curr.getDataIndex( data )
-				# for i in range(  len( curr.data )-1, index, -1 ):
-				# 	curr.data[i] = curr.data[i-1]
 				curr.data[(index+1):] = curr.data[index:2]
 				curr.data[index] = data
 				return
 			else:
 				#find pointer to follow
 				index = curr.getPtrIndex( data )
-				self.split( curr, index )
+				self.split( curr, index ) # O(klogn) time
 				index = curr.getPtrIndex( data )
 				curr = curr.ptr[index]
 
@@ -276,7 +274,7 @@ for i, item in enumerate( infile ):
 random.shuffle(wordlist)
 # wordlist.sort( key= lambda x: len( x ), reverse= True )
 
-### Start timing insert
+### Start timing inserts
 tInsert_start = time.clock()
 for w in wordlist:
 	T.insert(w[:-1])
@@ -287,13 +285,12 @@ for w in wordlist:
 	avlTree.insert(w[:-1])
 aInsert_end = time.clock()
 
-
+### print the trees
 #print T.printTree(1)
 #print avlTree.as_list(1)
 
 print '---------------------------------'
-print 'insert'
-print 'wordlist size, 234 tree insert time, avl tree insert time, 234 size'
+print 'insert times:'
 print wlSize
 print tInsert_end - tInsert_start
 print aInsert_end - aInsert_start
@@ -306,43 +303,36 @@ print '---------------------------------'
 # 	print w
 # print '---------------------------------'
 
-## Look for words in t234 and print matches
-# found = T.find(mysteryWord)
-# for w in found:
-# 	print w,
-
 ### get search times
-# found234 = []
-# foundavl = []
-# tSearch_start = []
-# aSearch_start = []
-# tSearch_end = []
-# aSearch_end = []
+found234 = []
+foundavl = []
+tSearch_start = []
+aSearch_start = []
+tSearch_end = []
+aSearch_end = []
 
-# for w in searchlist:
-# 	# print 'searching for', w
+for w in searchlist:
+	# print 'searching for', w
 
-# 	tSearch_start.append(time.clock())
-# 	found234.extend((T.find(w)))
-# 	tSearch_end.append(time.clock())
+	tSearch_start.append(time.clock())
+	found234.extend((T.find(w)))
+	tSearch_end.append(time.clock())
 
-# 	aSearch_start.append(time.clock())
-# 	foundavl.append((avlTree.find(w).key))
-# 	aSearch_end.append(time.clock())
+	aSearch_start.append(time.clock())
+	foundavl.append((avlTree.find(w).key))
+	aSearch_end.append(time.clock())
 
-# print 'search times'
-# it = 0
-# for f in found234:
-# 	print tSearch_end[it] - tSearch_start[it]
-# 	it += 1
-# print '---------------------------------'
-# it = 0
-# for f in foundavl:
-# 	print aSearch_end[it] - aSearch_start[it]
-# 	it += 1
-# print '---------------------------------'
-#print avlTree.as_list(1)
-#print T.printTree(1)
+print '---------------------------------'
+print 'search times'
+it = 0
+for f in found234:
+	print tSearch_end[it] - tSearch_start[it]
+	it += 1
+it = 0
+for f in foundavl:
+	print aSearch_end[it] - aSearch_start[it]
+	it += 1
+print '---------------------------------'
 
 ### get size of trees
 print T.getSize()
